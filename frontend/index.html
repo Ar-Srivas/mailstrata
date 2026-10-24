@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>BuriedSignals — Inbox Recovery</title>
+  <title>MailStrata — Inbox Recovery</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -12,14 +12,14 @@
       <span class="brand-mark">≈</span>
       <span>MailStrata</span>
     </a>
-    <span class="local-pill"><span class="dot"></span> LOCAL AI PIPELINE</span>
+    <span class="local-pill"><span class="dot"></span> PRIVATE · LOCAL AI</span>
   </header>
 
   <main class="shell">
     <section class="hero">
-      <p class="eyebrow">INBOX BACKLOG RECOVERY</p>
-      <h1>Your inbox has a past.<br><span>Let's recover what matters.</span></h1>
-      <p class="hero-copy">Find forgotten requests, important conversations and possible deadlines without reading every email.</p>
+      <p class="eyebrow">YOUR INBOX'S MEMORY, RECOVERED AUTOMATICALLY</p>
+      <h1>Your inbox is a mess.<br><span>Let it sort itself out.</span></h1>
+      <p class="hero-copy">Import once. Let your laptop do the tedious work. Find forgotten requests, commitments, and decisions without rereading your archive.</p>
     </section>
 
     <section class="panel upload-panel">
@@ -28,22 +28,38 @@
           <p class="eyebrow">STEP 01</p>
           <h2>Bring in your emails</h2>
         </div>
-        <span class="file-hint">.MBOX or .EML · max 50 MB</span>
+        <span class="file-hint">.MBOX, .EML, or ZIP · max 50 MB</span>
       </div>
       <form id="upload-form">
         <label class="dropzone" for="email-file" id="dropzone">
           <span class="upload-icon">↑</span>
-          <strong id="file-label">Choose an email export</strong>
-          <span>Click to select a file from your computer</span>
-          <input id="email-file" name="file" type="file" accept=".mbox,.eml" required>
+          <strong id="file-label">Drop an archive here, or choose a file</strong>
+          <span>Email content stays on this computer and is never sent to a cloud AI service.</span>
+          <input id="email-file" name="file" type="file" accept=".mbox,.eml,.zip" required>
         </label>
         <div class="form-footer">
-          <p class="privacy-note">Your file is processed by this local app. Avoid uploading sensitive emails to a hosted server.</p>
-          <button type="submit" id="start-button" class="primary-button">Start recovery <span>→</span></button>
+          <p class="privacy-note">Attachments are skipped. Temporary email files are removed after parsing; only reports are kept until you clear them.</p>
+          <div class="upload-actions">
+            <button type="button" id="demo-button" class="secondary-button">Try synthetic demo</button>
+            <button type="submit" id="start-button" class="primary-button">Start recovery <span>→</span></button>
+          </div>
         </div>
       </form>
       <div id="error-message" class="message error" hidden></div>
+      <div class="model-settings">
+        <label for="model-select">Local Ollama model</label>
+        <div class="model-controls">
+          <select id="model-select" aria-describedby="model-feedback"></select>
+          <button type="button" id="refresh-models" class="secondary-button">Refresh models</button>
+        </div>
+        <p id="model-feedback" class="model-feedback">Loading installed models…</p>
+        <p id="model-status" class="model-status">Checking Ollama…</p>
+      </div>
     </section>
+    <div class="retention-controls">
+      <p>Recovery reports and evidence excerpts are stored locally until cleared.</p>
+      <button type="button" id="clear-button" class="secondary-button">Clear saved data</button>
+    </div>
 
     <section class="panel progress-panel" id="progress-panel" hidden>
       <div class="section-heading">
@@ -62,7 +78,7 @@
       <div class="report-heading">
         <div>
           <p class="eyebrow">STEP 03</p>
-          <h2>Your recovery report</h2>
+          <h2>Your Recovery Brief</h2>
           <p class="muted" id="report-subtitle"></p>
         </div>
         <button id="download-button" class="secondary-button">Export JSON ↓</button>
@@ -75,17 +91,23 @@
       </div>
 
       <div class="filter-row">
-        <h3>Messages to review</h3>
-        <select id="filter-select" aria-label="Filter messages">
-          <option value="all">All messages</option>
-          <option value="actions">Potential actions</option>
-          <option value="high">High priority</option>
-        </select>
+        <h3>Worth your attention</h3>
+        <div class="filter-controls">
+          <input id="search-input" type="search" placeholder="Search this brief" aria-label="Search recovery brief">
+          <select id="filter-select" aria-label="Filter recovery brief">
+            <option value="all">All findings</option>
+            <option value="task">You may have forgotten</option>
+            <option value="deadline">Deadlines to check</option>
+            <option value="waiting">Waiting on you</option>
+            <option value="decision">Important decisions</option>
+            <option value="revisit">Worth revisiting</option>
+          </select>
+        </div>
       </div>
       <div id="warnings" class="warnings" hidden></div>
       <div id="results-list" class="results-list"></div>
     </section>
-    <footer><span>BuriedSignals</span><span>Recover context. Not just unread counts.</span></footer>
+    <footer><span>MailStrata</span><span>Recover context. Not just unread counts.</span></footer>
   </main>
   <script src="/static/app.js"></script>
 </body>
