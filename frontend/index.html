@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>BuriedSignals — Inbox Recovery</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/">
+      <span class="brand-mark">≈</span>
+      <span>MailStrata</span>
+    </a>
+    <span class="local-pill"><span class="dot"></span> LOCAL AI PIPELINE</span>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">INBOX BACKLOG RECOVERY</p>
+      <h1>Your inbox has a past.<br><span>Let's recover what matters.</span></h1>
+      <p class="hero-copy">Find forgotten requests, important conversations and possible deadlines without reading every email.</p>
+    </section>
+
+    <section class="panel upload-panel">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">STEP 01</p>
+          <h2>Bring in your emails</h2>
+        </div>
+        <span class="file-hint">.MBOX or .EML · max 50 MB</span>
+      </div>
+      <form id="upload-form">
+        <label class="dropzone" for="email-file" id="dropzone">
+          <span class="upload-icon">↑</span>
+          <strong id="file-label">Choose an email export</strong>
+          <span>Click to select a file from your computer</span>
+          <input id="email-file" name="file" type="file" accept=".mbox,.eml" required>
+        </label>
+        <div class="form-footer">
+          <p class="privacy-note">Your file is processed by this local app. Avoid uploading sensitive emails to a hosted server.</p>
+          <button type="submit" id="start-button" class="primary-button">Start recovery <span>→</span></button>
+        </div>
+      </form>
+      <div id="error-message" class="message error" hidden></div>
+    </section>
+
+    <section class="panel progress-panel" id="progress-panel" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">STEP 02</p>
+          <h2 id="progress-title">Preparing your recovery report</h2>
+        </div>
+        <span class="status-chip" id="status-chip">QUEUED</span>
+      </div>
+      <p id="progress-copy" class="muted">Parsing email messages…</p>
+      <div class="progress-track"><div id="progress-bar"></div></div>
+      <p class="progress-meta" id="progress-meta">Waiting for processing to start</p>
+    </section>
+
+    <section id="report-section" hidden>
+      <div class="report-heading">
+        <div>
+          <p class="eyebrow">STEP 03</p>
+          <h2>Your recovery report</h2>
+          <p class="muted" id="report-subtitle"></p>
+        </div>
+        <button id="download-button" class="secondary-button">Export JSON ↓</button>
+      </div>
+      <div class="stats-grid">
+        <article class="stat-card"><span>Emails analyzed</span><strong id="stat-emails">0</strong></article>
+        <article class="stat-card"><span>Potential actions</span><strong id="stat-actions">0</strong></article>
+        <article class="stat-card"><span>High priority</span><strong id="stat-high">0</strong></article>
+        <article class="stat-card"><span>Threads found</span><strong id="stat-threads">0</strong></article>
+      </div>
+
+      <div class="filter-row">
+        <h3>Messages to review</h3>
+        <select id="filter-select" aria-label="Filter messages">
+          <option value="all">All messages</option>
+          <option value="actions">Potential actions</option>
+          <option value="high">High priority</option>
+        </select>
+      </div>
+      <div id="warnings" class="warnings" hidden></div>
+      <div id="results-list" class="results-list"></div>
+    </section>
+    <footer><span>BuriedSignals</span><span>Recover context. Not just unread counts.</span></footer>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
