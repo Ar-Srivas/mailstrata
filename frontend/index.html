@@ -3,112 +3,175 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>MailStrata — Inbox Recovery</title>
+  <title>MailStrata · Inbox Recovery</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <header class="topbar">
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
     <a class="brand" href="/">
       <span class="brand-mark">≈</span>
       <span>MailStrata</span>
     </a>
-    <span class="local-pill"><span class="dot"></span> PRIVATE · LOCAL AI</span>
-  </header>
 
-  <main class="shell">
-    <section class="hero">
-      <p class="eyebrow">YOUR INBOX'S MEMORY, RECOVERED AUTOMATICALLY</p>
-      <h1>Your inbox is a mess.<br><span>Let it sort itself out.</span></h1>
-      <p class="hero-copy">Import once. Let your laptop do the tedious work. Find forgotten requests, commitments, and decisions without rereading your archive.</p>
-    </section>
+    <nav class="steps" aria-label="Progress">
+      <button type="button" class="step" data-view="import">
+        <span class="step-num">1</span>
+        <span class="step-text"><strong>Import</strong><small>Add your emails</small></span>
+      </button>
+      <button type="button" class="step" data-view="progress" disabled>
+        <span class="step-num">2</span>
+        <span class="step-text"><strong>Analyze</strong><small>Runs on its own</small></span>
+      </button>
+      <button type="button" class="step" data-view="report" disabled>
+        <span class="step-num">3</span>
+        <span class="step-text"><strong>Your brief</strong><small>What to act on</small></span>
+      </button>
+    </nav>
 
-    <section class="panel upload-panel">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">STEP 01</p>
-          <h2>Bring in your emails</h2>
+    <div class="sidebar-bottom">
+      <p class="privacy">
+        <span class="dot"></span>
+        Everything runs on this computer. Gmail access is read-only, and your emails never go to a cloud AI.
+      </p>
+
+      <details class="side-details">
+        <summary>Settings</summary>
+        <div class="model-settings">
+          <label for="model-select">AI model (Ollama)</label>
+          <select id="model-select" aria-describedby="model-feedback"></select>
+          <button type="button" id="refresh-models" class="link-button">Refresh list</button>
+          <p id="model-feedback" class="model-feedback">Loading installed models…</p>
         </div>
-        <span class="file-hint">.MBOX, .EML, or ZIP · max 50 MB</span>
-      </div>
-      <form id="upload-form">
-        <label class="dropzone" for="email-file" id="dropzone">
-          <span class="upload-icon">↑</span>
-          <strong id="file-label">Drop an archive here, or choose a file</strong>
-          <span>Email content stays on this computer and is never sent to a cloud AI service.</span>
-          <input id="email-file" name="file" type="file" accept=".mbox,.eml,.zip" required>
-        </label>
-        <div class="form-footer">
-          <p class="privacy-note">Attachments are skipped. Temporary email files are removed after parsing; only reports are kept until you clear them.</p>
-          <div class="upload-actions">
-            <button type="button" id="demo-button" class="secondary-button">Try synthetic demo</button>
-            <button type="submit" id="start-button" class="primary-button">Start recovery <span>→</span></button>
+        <div class="retention">
+          <p>Reports are saved on this computer until you delete them.</p>
+          <button type="button" id="clear-button" class="danger-button">Delete saved reports</button>
+        </div>
+      </details>
+
+      <p id="model-status" class="model-status"><span class="dot"></span><span id="model-status-text">Checking Ollama…</span></p>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+
+    <div id="error-message" class="message error" role="alert" hidden></div>
+
+    <!-- VIEW 1: IMPORT -->
+    <section id="view-import" class="view">
+      <header class="view-head">
+        <h1>Find what you forgot to do</h1>
+        <p class="lead">Drop in your email archive. You'll get a short list of deadlines, replies you owe, and decisions worth a second look.</p>
+      </header>
+
+      <div class="card gmail-card" id="gmail-card">
+        <h2>Scan your Gmail</h2>
+        <p class="muted">Read-only access. MailStrata can read your mail but can't send, delete or change anything.</p>
+
+        <div id="gmail-setup" hidden>
+          <p id="gmail-setup-msg" class="hint"></p>
+          <p class="hint">One-time setup takes about 5 minutes. See <strong>GMAIL_SETUP.md</strong>.</p>
+        </div>
+        <div id="gmail-connect" hidden>
+          <button type="button" id="gmail-connect-button" class="primary-button">Connect Gmail</button>
+        </div>
+        <div id="gmail-ready" hidden>
+          <p class="gmail-account">Connected as <strong id="gmail-account"></strong>
+            <button type="button" id="gmail-disconnect" class="link-dark">Disconnect</button></p>
+          <div class="form-actions">
+            <label class="field">Look back
+              <select id="gmail-days">
+                <option value="7">7 days</option>
+                <option value="14">14 days</option>
+                <option value="30" selected>30 days</option>
+                <option value="90">90 days</option>
+              </select>
+            </label>
+            <button type="button" id="gmail-scan-button" class="primary-button">Scan my inbox</button>
           </div>
         </div>
+      </div>
+
+      <p class="or-divider"><span>or upload an export file</span></p>
+
+      <form id="upload-form" class="card">
+        <label class="dropzone" for="email-file" id="dropzone">
+          <span class="upload-icon" id="upload-icon">↑</span>
+          <strong id="file-label">Drop your file here, or click to choose</strong>
+          <span id="file-sub">.mbox, .eml or .zip · up to 50 MB</span>
+          <input id="email-file" name="file" type="file" accept=".mbox,.eml,.zip" required>
+        </label>
+
+        <div class="form-actions">
+          <button type="submit" id="start-button" class="primary-button">Find my to-dos</button>
+          <button type="button" id="demo-button" class="ghost-button">No file? Try the demo</button>
+        </div>
       </form>
-      <div id="error-message" class="message error" hidden></div>
-      <div class="model-settings">
-        <label for="model-select">Local Ollama model</label>
-        <div class="model-controls">
-          <select id="model-select" aria-describedby="model-feedback"></select>
-          <button type="button" id="refresh-models" class="secondary-button">Refresh models</button>
-        </div>
-        <p id="model-feedback" class="model-feedback">Loading installed models…</p>
-        <p id="model-status" class="model-status">Checking Ollama…</p>
-      </div>
-    </section>
-    <div class="retention-controls">
-      <p>Recovery reports and evidence excerpts are stored locally until cleared.</p>
-      <button type="button" id="clear-button" class="secondary-button">Clear saved data</button>
-    </div>
 
-    <section class="panel progress-panel" id="progress-panel" hidden>
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">STEP 02</p>
-          <h2 id="progress-title">Preparing your recovery report</h2>
-        </div>
-        <span class="status-chip" id="status-chip">QUEUED</span>
-      </div>
-      <p id="progress-copy" class="muted">Parsing email messages…</p>
-      <div class="progress-track"><div id="progress-bar"></div></div>
-      <p class="progress-meta" id="progress-meta">Waiting for processing to start</p>
+      <ol class="how">
+        <li><strong>Import.</strong> Attachments are skipped and the temporary file is deleted after reading.</li>
+        <li><strong>Wait a bit.</strong> A local AI reads your messages in small batches.</li>
+        <li><strong>Read your brief.</strong> Start with the top items, tick them off as you go.</li>
+      </ol>
     </section>
 
-    <section id="report-section" hidden>
-      <div class="report-heading">
-        <div>
-          <p class="eyebrow">STEP 03</p>
-          <h2>Your Recovery Brief</h2>
-          <p class="muted" id="report-subtitle"></p>
-        </div>
-        <button id="download-button" class="secondary-button">Export JSON ↓</button>
+    <!-- VIEW 2: PROGRESS -->
+    <section id="progress-panel" class="view" hidden>
+      <header class="view-head">
+        <p class="chip" id="status-chip">Queued</p>
+        <h1 id="progress-title">Getting started</h1>
+        <p class="lead" id="progress-copy">Reading your emails…</p>
+      </header>
+      <div class="card">
+        <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100"><div id="progress-bar"></div></div>
+        <p class="progress-meta" id="progress-meta">Waiting for processing to start</p>
+        <p class="hint">You can leave this tab open and come back. Nothing is sent online.</p>
       </div>
-      <div class="stats-grid">
-        <article class="stat-card"><span>Emails analyzed</span><strong id="stat-emails">0</strong></article>
-        <article class="stat-card"><span>Potential actions</span><strong id="stat-actions">0</strong></article>
-        <article class="stat-card"><span>High priority</span><strong id="stat-high">0</strong></article>
-        <article class="stat-card"><span>Threads found</span><strong id="stat-threads">0</strong></article>
+    </section>
+
+    <!-- VIEW 3: REPORT -->
+    <section id="report-section" class="view" hidden>
+      <header class="view-head report-head">
+        <div>
+          <h1>Your recovery brief</h1>
+          <p class="lead" id="report-subtitle"></p>
+        </div>
+        <div class="head-actions">
+          <button type="button" id="new-button" class="ghost-button">Import another</button>
+          <button type="button" id="download-button" class="ghost-button">Export JSON</button>
+        </div>
+      </header>
+
+      <p class="summary-line" id="summary-line"></p>
+      <p class="ignored-line" id="ignored-line" hidden></p>
+
+      <div class="stats" aria-label="Summary">
+        <div class="stat"><strong id="stat-emails">0</strong><span>emails read</span></div>
+        <div class="stat"><strong id="stat-actions">0</strong><span>possible actions</span></div>
+        <div class="stat stat-high"><strong id="stat-high">0</strong><span>high priority</span></div>
+        <div class="stat"><strong id="stat-threads">0</strong><span>threads</span></div>
       </div>
 
-      <div class="filter-row">
-        <h3>Worth your attention</h3>
-        <div class="filter-controls">
-          <input id="search-input" type="search" placeholder="Search this brief" aria-label="Search recovery brief">
-          <select id="filter-select" aria-label="Filter recovery brief">
-            <option value="all">All findings</option>
-            <option value="task">You may have forgotten</option>
-            <option value="deadline">Deadlines to check</option>
-            <option value="waiting">Waiting on you</option>
-            <option value="decision">Important decisions</option>
-            <option value="revisit">Worth revisiting</option>
-          </select>
-        </div>
-      </div>
       <div id="warnings" class="warnings" hidden></div>
+
+      <div class="toolbar">
+        <div class="tabs" id="category-tabs" role="tablist" aria-label="Category"></div>
+        <div class="filters">
+          <input id="search-input" type="search" placeholder="Search…" aria-label="Search recovery brief">
+          <label class="toggle"><input type="checkbox" id="high-only"> High priority only</label>
+          <label class="toggle"><input type="checkbox" id="hide-done"> Hide done</label>
+        </div>
+      </div>
+
       <div id="results-list" class="results-list"></div>
     </section>
-    <footer><span>MailStrata</span><span>Recover context. Not just unread counts.</span></footer>
+
   </main>
-  <script src="/static/app.js"></script>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+<script src="/static/app.js"></script>
 </body>
 </html>

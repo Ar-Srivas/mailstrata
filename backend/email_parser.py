@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import email
+from html.parser import HTMLParser
 import hashlib
 import mailbox
 import re
@@ -12,6 +13,36 @@ from typing import Iterable
 
 
 MAX_BODY_CHARS = 7000
+
+
+class _EmailHTMLText(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.parts: list[str] = []
+        self._ignored_tags: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs):
+        if tag in {"script", "style", "head"}:
+            self._ignored_tags.append(tag)
+        elif tag in {"br", "p", "div", "li", "tr", "td", "th"} and not self._ignored_tags:
+            self.parts.append("\n")
+
+    def handle_endtag(self, tag: str):
+        if tag in self._ignored_tags:
+            self._ignored_tags.remove(tag)
+        elif tag in {"p", "div", "li", "tr"} and not self._ignored_tags:
+            self.parts.append("\n")
+
+    def handle_data(self, data: str):
+        if not self._ignored_tags:
+            self.parts.append(data)
+
+
+def _html_to_text(html: str) -> str:
+    parser = _EmailHTMLText()
+    parser.feed(html)
+    parser.close()
+    return "".join(parser.parts)
 
 
 def _decode_part(part: Message) -> str:
@@ -46,11 +77,11 @@ def _body_from_message(msg: Message) -> str:
             for part in msg.walk():
                 if part.get_content_type() == "text/html" and part.get_content_disposition() != "attachment":
                     html = _decode_part(part)
-                    chunks.append(re.sub(r"<[^>]+>", " ", html))
+                    chunks.append(_html_to_text(html))
     else:
         content_type = msg.get_content_type()
         body = _decode_part(msg)
-        chunks.append(re.sub(r"<[^>]+>", " ", body) if content_type == "text/html" else body)
+        chunks.append(_html_to_text(body) if content_type == "text/html" else body)
 
     text = "\n".join(chunks)
     text = re.sub(r"[ \t]+", " ", text)

@@ -19,3 +19,23 @@ def test_parse_single_eml(tmp_path: Path):
     assert result[0]["email_id"] == "message-1@example.com"
     assert result[0]["subject"] == "Please send the report"
     assert "send the report" in result[0]["body"]
+
+
+def test_parse_html_only_email_omits_styles_and_preserves_text(tmp_path: Path):
+    msg = EmailMessage()
+    msg["From"] = "A Person <a@example.com>"
+    msg["To"] = "b@example.com"
+    msg["Subject"] = "Application confirmation"
+    msg.set_content(
+        """<html><head><style>body { margin: 0; }</style></head>
+        <body><div class="desktop">Please confirm your application by Friday.</div>
+        <script>window.tracker = true;</script></body></html>""",
+        subtype="html",
+    )
+    path = tmp_path / "html-only.eml"
+    path.write_bytes(msg.as_bytes())
+
+    result = parse_email_file(path)
+
+    assert len(result) == 1
+    assert result[0]["body"] == "Please confirm your application by Friday."

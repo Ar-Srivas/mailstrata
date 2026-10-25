@@ -19,6 +19,7 @@ from fastapi.staticfiles import StaticFiles
 
 from backend.email_parser import parse_email_file
 from backend.recovery_engine import MAX_EMAILS, OLLAMA_MODEL, OLLAMA_URL, analyze_emails, group_threads
+from backend.gmail_routes import build_router
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
@@ -35,7 +36,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://127.0.0.1:8000", "http://localhost:8000"],
     allow_credentials=False,
-    allow_methods=["GET", "POST", "DELETE"],
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["*"],
 )
 
@@ -70,6 +71,12 @@ def init_db():
             "INSERT OR IGNORE INTO app_config (key, value) VALUES ('ollama_model', ?)",
             (os.getenv("OLLAMA_MODEL", OLLAMA_MODEL),),
         )
+        if OLLAMA_MODEL == "gemma3:1b":
+            conn.execute(
+                "UPDATE app_config SET value = ? "
+                "WHERE key = 'ollama_model' AND value = 'qwen2.5:1.5b'",
+                (OLLAMA_MODEL,),
+            )
 
 
 init_db()
@@ -258,6 +265,9 @@ def _create_completed_job(filename: str, report: dict) -> str:
             ),
         )
     return job_id
+
+
+app.include_router(build_router(db_connect, update_job, get_active_model, DATA_DIR, MAX_FINDINGS))
 
 
 @app.get("/")
