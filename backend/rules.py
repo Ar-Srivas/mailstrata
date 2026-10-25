@@ -1,8 +1,3 @@
-"""Rule-based triage: fast, explainable, no AI needed.
-
-Every decision adds a plain-English "signal" so the dashboard can show *why*
-something was flagged. Rules run first; Gemma only sees what survives.
-"""
 from __future__ import annotations
 
 import re

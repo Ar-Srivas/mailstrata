@@ -1,4 +1,3 @@
-"""Gmail + rules endpoints. Plug into main.py with one include_router call."""
 from __future__ import annotations
 
 import json
