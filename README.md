@@ -1,5 +1,7 @@
 # MailStrata
 
+![MailStrata — calm inbox triage](<assets/MailStrata_ Calm Inbox Triage.png>)
+
 **Turn an overwhelming inbox into a short, evidence-backed list of things worth revisiting.**
 
 MailStrata is a local-first email recovery app. Import an email archive—or optionally connect Gmail read-only—and get a focused brief of possible replies, tasks, deadlines, decisions, and conversations to revisit. Analysis runs through a local Ollama model.
@@ -11,6 +13,8 @@ MailStrata is a local-first email recovery app. Import an email archive—or opt
 - Shows source excerpts and links to original Gmail messages when available.
 - Keeps reports and preferences on your machine; it never sends, changes, or deletes email.
 - Includes a synthetic demo that works without connecting an inbox.
+
+![MailStrata app preview](assets/cursorful-video-1792910365262.gif)
 
 Findings are suggestions, not verified obligations. Review the original message before acting.
 
